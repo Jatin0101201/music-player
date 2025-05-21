@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music Player</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    .song { padding: 10px; border: 1px solid #ccc; margin-bottom: 5px; cursor: pointer; }
+    .song.active { background-color: #e0f0ff; }
+    .controls { margin-top: 20px; display: flex; gap: 10px; align-items: center; }
+    .volume { display: flex; align-items: center; gap: 5px; }
+  </style>
+</head>
+<body>
+  <h2>Web Music Player</h2>
+  <input type="text" id="search" placeholder="Search by title or category..." style="width: 100%; padding: 8px;">
+
+  <div id="playlist"></div>
+
+  <div class="controls">
+    <button id="playPause">Play</button>
+    <button id="skip">Skip</button>
+    <div class="volume">
+      Volume <input type="range" id="volume" min="0" max="1" step="0.01">
+    </div>
+  </div>
+
+  <audio id="audio" controls style="display: none;"></audio>
+
+  <script>
+    const musicLibrary = [
+      { title: "Song One", category: "Pop", src: "music/song1.mp3" },
+      { title: "Song Two", category: "Rock", src: "music/song2.mp3" },
+      { title: "Song Three", category: "Jazz", src: "music/song3.mp3" }
+    ];
+
+    let currentIndex = 0;
+    let isPlaying = false;
+
+    const searchInput = document.getElementById('search');
+    const playlistDiv = document.getElementById('playlist');
+    const audio = document.getElementById('audio');
+    const playPauseBtn = document.getElementById('playPause');
+    const skipBtn = document.getElementById('skip');
+    const volumeSlider = document.getElementById('volume');
+
+    volumeSlider.value = 0.5;
+    audio.volume = 0.5;
+
+    function renderPlaylist(filter = "") {
+      playlistDiv.innerHTML = "";
+      musicLibrary.forEach((song, index) => {
+        if (
+          song.title.toLowerCase().includes(filter.toLowerCase()) ||
+          song.category.toLowerCase().includes(filter.toLowerCase())
+        ) {
+          const div = document.createElement('div');
+          div.className = `song ${index === currentIndex ? 'active' : ''}`;
+          div.textContent = `${song.title} (${song.category})`;
+          div.onclick = () => selectSong(index);
+          playlistDiv.appendChild(div);
+        }
+      });
+    }
+
+    function selectSong(index) {
+      currentIndex = index;
+      audio.src = musicLibrary[currentIndex].src;
+      renderPlaylist(searchInput.value);
+      playAudio();
+    }
+
+    function playAudio() {
+      audio.play();
+      isPlaying = true;
+      playPauseBtn.textContent = "Pause";
+    }
+
+    function pauseAudio() {
+      audio.pause();
+      isPlaying = false;
+      playPauseBtn.textContent = "Play";
+    }
+
+    playPauseBtn.onclick = () => {
+      if (isPlaying) {
+        pauseAudio();
+      } else {
+        playAudio();
+      }
+    };
+
+    skipBtn.onclick = () => {
+      currentIndex = (currentIndex + 1) % musicLibrary.length;
+      audio.src = musicLibrary[currentIndex].src;
+      renderPlaylist(searchInput.value);
+      playAudio();
+    };
+
+    volumeSlider.oninput = (e) => {
+      audio.volume = e.target.value;
+    };
+
+    searchInput.oninput = () => renderPlaylist(searchInput.value);
+
+    // Initial setup
+    renderPlaylist();
+    audio.src = musicLibrary[currentIndex].src;
+  </script>
+</body>
+</html>
